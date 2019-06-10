@@ -1,6 +1,16 @@
 <html>
   <head>
 <style>
+  #homePage {
+    display: flex;
+    align-content: center;
+    flex-direction: column;
+  }
+  #createUserForm {
+    display: flex;
+    background-color: lightgrey;
+    flex-direction: column;
+  }
 </style>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
@@ -97,23 +107,141 @@
     <script type='text/babel'>
       const root = document.querySelector('#root');
       const db = new DB('users');
+      const {HashRouter, Route, NavLink, Link} = ReactRouterDOM;
+
       class App extends React.Component{
         constructor(){
           super();
           this.state = {
-            users: 0
-          }
-        }
-        componentDidMount(){
-          db.read()
-            .then(users => this.setState({ users }))
-        }
+            users: [
+              {id:0, name:'Foo'},
+              {id:1, name:'Bar'},
+              {id:2, name:'Bizz'},
+            ]
+          };
+        };
+        // componentDidMount(){
+        //   db.read()
+        //     .then(users => this.setState({ users }))
+        //     console.log(this.state)
+        //};
         render(){
-          return( <div>Divider {this.state.users.length}</div>
+          return(
+            <HashRouter>
+              <h2>Acme Users CRUD</h2>
+              <NavBar appState={this.state} />
+              <Route exact path='/' component={Home} />
+              <Route path='/users'
+                render = {(props)=>
+                  <Users
+                  createUser={this.createUser}
+                  appState={this.state}
+                  />}
+              />
+            </HashRouter>
           );
-        }
+        };
+      };
+// NAVBAR COMPONENT - renders links to Home and Users
+      class NavBar extends React.Component {
+        constructor(props) {
+          super(props)
+        };
+        render() {
+          return(
+            <div>
+              <NavLink to='/'> Home </NavLink>
+              <NavLink to='/users'> Users: {this.props.appState.users.length} </NavLink>
+            </div>
+          )
+        };
+      };
+// HOME COMPONENT
+      class Home extends React.Component {
+        constructor (props) {
+          super(props)
+        };
+        render() {
+          return(
+            <div id='homePage'>
+              <div>
+                <h2>Home Page</h2>
+              </div>
+              <img src='./acmeCoyote.jpg' />
+            </div>
+          )
+        };
       }
-
+// USER COMPONENT - renders CreateUserForm and UserList
+      class Users extends React.Component{
+        constructor(props){
+          super(props)
+          console.log(props)
+        };
+        render() {
+          const users = this.props.appState.users
+          return(
+            <div>
+              <CreateUser />
+              <UserList
+              createUser={this.props.createUser}
+              appState={this.props.appState}
+              />
+            </div>
+          )
+        };
+      };
+// USERLIST COMPONENT - renders list of users, (onClick) render EditUser
+      class UserList extends React.Component{
+        constructor(props){
+          super(props)
+        };
+        render() {
+          const users = this.props.appState.users
+          return(
+            <ul>
+              {users.map((user)=>
+                <li key={user.name} >
+                  {user.name}
+                </li>
+              )}
+            </ul>
+          )
+        };
+      };
+//CREATEUSER - render form to add users to local storage, (onSubmit) create user in db
+      class CreateUser extends React.Component{
+        constructor(){
+          super()
+          this.state = {
+            name:'Carl',
+            isAdmin: true,
+          };
+          this.createUser=this.createUser.bind(this)
+        };
+        createUser() {
+          console.log('yup yup')
+        };
+        render() {
+          console.log(this.state)
+          return(
+            <div id='createUserForm'>
+              <h4> Create A User </h4>
+              <form
+                id='createUserForm'
+                onSubmit={this.createUser}
+              >
+                <input placeholder='Enter Name'>
+                </input>
+                <label> Make Admin
+                  <input type="checkbox"></input>
+                </label>
+                <button> Create </button>
+              </form>
+            </div>
+          )
+        }
+      };
 
       ReactDOM.render(<App />, root);
     </script>
