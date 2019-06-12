@@ -113,18 +113,14 @@
         constructor(){
           super();
           this.state = {
-            users: [
-              {id:0, name:'Foo'},
-              {id:1, name:'Bar'},
-              {id:2, name:'Bizz'},
-            ]
+            users: []
           };
         };
-        // componentDidMount(){
-        //   db.read()
-        //     .then(users => this.setState({ users }))
-        //     console.log(this.state)
-        //};
+        componentDidMount(){
+          db.read()
+            .then(users => this.setState({ users }))
+            console.log(this.state)
+        };
         render(){
           return(
             <HashRouter>
@@ -195,17 +191,30 @@
       class UserList extends React.Component{
         constructor(props){
           super(props)
+          this.state = {
+            selectedUser: 'Murphy'
+          }
+          this.selectUser=this.selectUser.bind(this)
         };
+        selectUser(ev) {
+          console.log(ev.target.value)
+        }
         render() {
           const users = this.props.appState.users
           return(
-            <ul>
-              {users.map((user)=>
-                <li key={user.name} >
-                  {user.name}
-                </li>
-              )}
-            </ul>
+            <div>
+              <ul>
+                {users.map((user)=>
+                  <li
+                    key={user.id}
+                    onClick={this.selectUser}
+                  >
+                    {user.name}
+                  </li>
+                )}
+              </ul>
+              <EditUser user={this.state.selectedUser} />
+            </div>
           )
         };
       };
@@ -214,22 +223,59 @@
         constructor(){
           super()
           this.state = {
-            name:'Carl',
-            isAdmin: true,
+            name:'Bob',
+            isAdmin: false,
           };
           this.createUser=this.createUser.bind(this)
+          this.handleChange=this.handleChange.bind(this)
+          this.adminChecker=this.adminChecker.bind(this)
+        };
+        handleChange(ev) {
+          this.setState({name:ev.target.value})
+        };
+        adminChecker(ev) {
+          if (ev.target.value === 'on'){
+            this.setState({isAdmin:true})
+          } else {
+            this.setState({isAdmin:false})
+          }
         };
         createUser() {
-          console.log('yup yup')
+          db.create(this.state)
+          setTimeout(location.reload(),1000)
         };
         render() {
-          console.log(this.state)
           return(
             <div id='createUserForm'>
               <h4> Create A User </h4>
               <form
                 id='createUserForm'
                 onSubmit={this.createUser}
+              >
+                <input placeholder='Enter Name'
+                  onChange={this.handleChange}
+                >
+                </input>
+                <label> Make Admin
+                  <input type="checkbox" onClick={this.adminChecker}></input>
+                </label>
+                <button> Create </button>
+              </form>
+            </div>
+          )
+        }
+      };
+//EDIT USER - displays edit form based on state of UserList, method to update db
+      class EditUser extends React.Component{
+        constructor(props){
+          super(props)
+        };
+        render() {
+          return(
+            <div id='createUserForm'>
+              <h4> Edit User </h4>
+              <form
+                id='createUserForm'
               >
                 <input placeholder='Enter Name'>
                 </input>
@@ -242,7 +288,6 @@
           )
         }
       };
-
       ReactDOM.render(<App />, root);
     </script>
   </body>
